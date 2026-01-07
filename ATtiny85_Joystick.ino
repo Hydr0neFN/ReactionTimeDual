@@ -424,7 +424,21 @@ void loop() {
       if (checkGoSignal() && gameStartTime == 0) {
         gameStartTime = millis();
         vibrateMotor(500);
-        currentState = (gameMode == MODE_SHAKE) ? STATE_SHAKE_MODE : STATE_BUTTON_MODE;
+        
+        if (gameMode == MODE_SHAKE) {
+          currentState = STATE_SHAKE_MODE;
+        } else {
+          // CHEAT DETECTION (same as software path)
+          if (digitalRead(PIN_BUTTON) == LOW) {
+            resultTime = 0xFFFF;  // Penalty
+            currentState = STATE_FINISHED;
+            vibrateMotor(100);
+            delay(100);
+            vibrateMotor(100);
+          } else {
+            currentState = STATE_BUTTON_MODE;
+          }
+        }
       }
       break;
       

@@ -423,7 +423,6 @@ void handleIdleState() {
 
 void handleAssignIDsState() {
   static unsigned long promptTime = 0;
-  static bool waiting = false;
   
   if (stateStartTime == 0) {
     stateStartTime = millis();
@@ -542,21 +541,26 @@ void handleCountdownState() {
   // Phase 0: Initial delay (1 second for mode announcement)
   if (phase == 0 && millis() - lastTick > 1000) {
     phase = 1;
-    lastTick = millis();
-  }
-  
-  // Phase 1: Countdown 3, 2, 1
-  if (phase == 1 && millis() - lastTick > 1000 && count > 0) {
-    lastTick = millis();
+    // Send first countdown immediately
     Serial.printf("Countdown: %d\n", count);
     sendPacket(ID_DISPLAY, DISP_COUNTDOWN, 0, count);
     sendPacket(ID_BROADCAST, CMD_COUNTDOWN, 0, count);
     audio.playCountdown(count);
     count--;
+    lastTick = millis();
+  }
+  
+  // Phase 1: Countdown continues (2, 1)
+  if (phase == 1 && millis() - lastTick > 1000 && count > 0) {
+    Serial.printf("Countdown: %d\n", count);
+    sendPacket(ID_DISPLAY, DISP_COUNTDOWN, 0, count);
+    sendPacket(ID_BROADCAST, CMD_COUNTDOWN, 0, count);
+    audio.playCountdown(count);
+    count--;
+    lastTick = millis();
     
     if (count == 0) {
       phase = 2;  // Move to final delay
-      lastTick = millis();
     }
   }
   
