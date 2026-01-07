@@ -1,8 +1,27 @@
-# Reaction Time Duel - Firmware
+# 🎮 Reaction Time Duel
 
-4-player reaction time game in a briefcase with detachable joysticks.
+[![Platform](https://img.shields.io/badge/Platform-ESP32%20%7C%20ATtiny85-blue)](https://www.espressif.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-In%20Development-yellow)]()
 
-## Hardware Architecture
+> **4-player competitive reaction time game in a portable briefcase with detachable joysticks.**
+
+![Game Preview](docs/preview.png)
+
+---
+
+## ✨ Features
+
+- 🕹️ **4 Detachable Joysticks** — USB-C connected, each with button + vibration motor
+- 📺 **7" Touch Display** — Real-time game status and results
+- 💡 **NeoPixel LED Rings** — Visual feedback for each player
+- 🔊 **Audio Feedback** — Voice announcements and sound effects
+- 🎯 **Two Game Modes** — Reaction time & Shake detection
+- 📦 **Portable Briefcase** — Take the party anywhere
+
+---
+
+## 🏗️ Hardware Architecture
 
 ```
 ┌─────────────────┐     Shared UART Bus      ┌──────────────────┐
@@ -10,220 +29,306 @@
 │  (DEVKIT-V1)    │     (9600 baud)          │    (7" LCD)      │
 └────────┬────────┘                          └──────────────────┘
          │
-         │ GPIO17 TX ─────────────────┬──────────────────┬───────────────┬────────────────►
-         │ GPIO16 RX ◄────────────────┼──────────────────┼───────────────┼─────────────────
-         │ GPIO19 GO ─────────────────┼──────────────────┼───────────────┼────────────────►
-         │ GPIO18 RST ────────────────┼──────────────────┼───────────────┼────────────────►
-         │                            ▼                  ▼               ▼
-         │                       ┌────────┐        ┌────────┐      ┌────────┐      ┌────────┐
-         │                       │Stick 1 │        │Stick 2 │      │Stick 3 │      │Stick 4 │
-         │                       │ATtiny85│        │ATtiny85│      │ATtiny85│      │ATtiny85│
-         │                       └────────┘        └────────┘      └────────┘      └────────┘
+         ├── GPIO17 TX ──────┬──────────┬──────────┬──────────►
+         ├── GPIO16 RX ◄─────┼──────────┼──────────┼───────────
+         ├── GPIO19 GO ──────┼──────────┼──────────┼──────────►
+         └── GPIO18 RST ─────┼──────────┼──────────┼──────────►
+                             ▼          ▼          ▼
+                        ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
+                        │Stick 1 │ │Stick 2 │ │Stick 3 │ │Stick 4 │
+                        │ATtiny85│ │ATtiny85│ │ATtiny85│ │ATtiny85│
+                        └────────┘ └────────┘ └────────┘ └────────┘
 ```
 
-## Pin Assignments (from schematic - PCB printed, DO NOT CHANGE)
+---
 
-### ESP32 Host (DEVKIT-V1)
+## 📋 Pin Assignments
+
+> ⚠️ **PCB is printed — DO NOT CHANGE these pins!**
+
+<details>
+<summary><b>ESP32 Host (DEVKIT-V1)</b></summary>
 
 | GPIO | Function | Connection |
-|------|----------|------------|
-| 17 | TX2 | → D+ → All joysticks RX (PB0) + Display RX |
-| 16 | RX2 | ← D- ← All joysticks TX (PB1) + Display TX (via voltage divider) |
-| 18 | CC1 | → RST signal → All joysticks PB5 (hardware reset) |
-| 19 | CC2 | → GO signal → All joysticks PB2 (hardware timing sync) |
-| 4 | DIN | → NeoPixel rings (60 LEDs = 5 × 12) |
-| 23 | DINS | → I2S DOUT → MAX98357A amplifier |
-| 26 | BCLK | → I2S BCLK |
-| 25 | LRC | → I2S LRC |
+|:----:|:---------|:-----------|
+| 17 | TX2 | → All joysticks RX + Display RX |
+| 16 | RX2 | ← All joysticks TX + Display TX |
+| 18 | CC1/RST | → Joysticks reset signal |
+| 19 | CC2/GO | → Joysticks timing sync |
+| 4 | DIN | → NeoPixel rings (5 × 12 LEDs) |
+| 23 | I2S DOUT | → MAX98357A amplifier |
+| 26 | I2S BCLK | → MAX98357A |
+| 25 | I2S LRC | → MAX98357A |
 
-### ATtiny85-20P Joystick
+</details>
+
+<details>
+<summary><b>ATtiny85-20P Joystick</b></summary>
 
 | Pin | PB# | Function | Notes |
-|-----|-----|----------|-------|
-| 5 | PB0 | UART RX + I2C SDA | **SHARED!** |
-| 6 | PB1 | UART TX | |
-| 7 | PB2 | I2C SCL + GO input | **SHARED!** |
-| 2 | PB3 | Button | INPUT_PULLUP, R5/C4 debounce |
-| 3 | PB4 | Motor PWM | via R6 → Q2 BC547 |
-| 1 | PB5 | RESET | Connected to CC1/RST |
+|:---:|:---:|:---------|:------|
+| 5 | PB0 | RX + SDA | ⚡ Shared |
+| 6 | PB1 | TX | |
+| 7 | PB2 | SCL + GO | ⚡ Shared |
+| 2 | PB3 | Button | Pull-up + debounce |
+| 3 | PB4 | Motor | Via BC547 transistor |
+| 1 | PB5 | Reset | From CC1 |
 
-### USB Type-C Connector Mapping
+</details>
+
+<details>
+<summary><b>USB Type-C Connector</b></summary>
 
 | USB Pin | Signal | Direction |
-|---------|--------|-----------|
-| D+ | RX (from host TX) | Host → Joystick |
-| D- | TX (to host RX) | Joystick → Host |
+|:-------:|:------:|:----------|
+| D+ | RX | Host → Joystick |
+| D- | TX | Joystick → Host |
 | CC1 | RST | Host → Joystick |
 | CC2 | GO | Host → Joystick |
 | VBUS | +5V | Power |
 
-## Protocol
+</details>
+
+---
+
+## 📡 Communication Protocol
 
 ### Packet Format (7 bytes)
 ```
-[0x0A][DEST_ID][SRC_ID][CMD][DATA_HIGH][DATA_LOW][CRC8]
+┌───────┬─────────┬────────┬─────┬───────────┬──────────┬───────┐
+│ START │ DEST_ID │ SRC_ID │ CMD │ DATA_HIGH │ DATA_LOW │  CRC  │
+│  0x0A │  1 byte │ 1 byte │ 1B  │   1 byte  │  1 byte  │ CRC8  │
+└───────┴─────────┴────────┴─────┴───────────┴──────────┴───────┘
 ```
 
-### Collision Prevention
-- **Token-based transmission**: Joysticks only transmit when granted permission
-- **Hardware GO signal**: GPIO19 pulse for precise timing sync (avoids UART latency)
-- **Display exception**: May transmit TOUCH_SKIP without token (rare, low collision risk)
+### Device IDs
+| ID | Device |
+|:--:|:-------|
+| `0x00` | Host |
+| `0x01`-`0x04` | Joystick 1-4 |
+| `0x05` | Display |
+| `0xFF` | Broadcast |
 
-## Shared Pin Strategy (ATtiny85)
+<details>
+<summary><b>📤 Commands: Host → Joystick</b></summary>
 
-PB0 and PB2 are shared between UART and I2C:
+| CMD | Hex | DATA_HIGH | DATA_LOW | Description |
+|:----|:---:|:---------:|:--------:|:------------|
+| `CMD_ASSIGN_ID` | `0x20` | — | target (1-4) | Assign ID |
+| `CMD_GAME_START` | `0x21` | mode | param | Start game |
+| `CMD_TRANSMIT_TOKEN` | `0x22` | — | player | Grant TX |
+| `CMD_VIBRATE` | `0x23` | — | duration | Vibrate motor |
+| `CMD_IDLE` | `0x24` | — | — | Return idle |
+| `CMD_COUNTDOWN` | `0x25` | — | seconds | Countdown |
 
-| Phase | PB0 Usage | PB2 Usage |
-|-------|-----------|-----------|
-| ID Assignment | UART RX | GO input (unused) |
-| Idle | UART RX | GO input |
-| Waiting GO | UART RX | GO input (waiting for HIGH) |
-| Button Mode | UART RX | GO input (already triggered) |
-| Shake Mode | **I2C SDA** | **I2C SCL** (UART degraded) |
-| Finished | UART RX | GO input |
+</details>
 
-**Key insight**: I2C (MPU-6050) is only needed during SHAKE_MODE. During this phase, UART RX may be degraded but commands are not expected.
+<details>
+<summary><b>📥 Commands: Joystick → Host</b></summary>
 
-## Known Hardware Issue
+| CMD | Hex | DATA_HIGH | DATA_LOW | Description |
+|:----|:---:|:---------:|:--------:|:------------|
+| `CMD_OK` | `0x0B` | — | player | ACK/Button |
+| `CMD_REACTION_DONE` | `0x26` | time>>8 | time&0xFF | Reaction ms |
+| `CMD_SHAKE_DONE` | `0x27` | time>>8 | time&0xFF | Shake ms |
 
-**SD Card Pin Conflict RESOLVED:** Original soundProgram used VSPI (GPIO18/19) which conflicts with CC1/CC2 signals. Solution: Use HSPI instead.
+</details>
 
-| Original (VSPI) | Corrected (HSPI) | Notes |
-|-----------------|------------------|-------|
-| GPIO18 (SCK) | GPIO14 | CC1/RST uses GPIO18 |
-| GPIO19 (MISO) | GPIO12 | CC2/GO uses GPIO19 |
-| GPIO23 (MOSI) | GPIO13 | I2S DOUT uses GPIO23 |
-| GPIO5 (CS) | GPIO5 | No conflict |
+<details>
+<summary><b>📺 Commands: Host → Display</b></summary>
 
-## Audio System
+| CMD | Hex | DATA_HIGH | DATA_LOW | Description |
+|:----|:---:|:---------:|:--------:|:------------|
+| `DISP_IDLE` | `0x30` | — | — | Start screen |
+| `DISP_PROMPT_JOIN` | `0x31` | — | player | Prompt join |
+| `DISP_PLAYER_JOINED` | `0x32` | — | player | Player joined |
+| `DISP_COUNTDOWN` | `0x33` | — | seconds | Countdown |
+| `DISP_GO` | `0x34` | — | — | Show "GO!" |
+| `DISP_REACTION_MODE` | `0x35` | — | — | Reaction mode |
+| `DISP_SHAKE_MODE` | `0x36` | — | target | Shake mode |
+| `DISP_TIME_P1` | `0x37` | time>>8 | time&0xFF | P1 time* |
+| `DISP_TIME_P2` | `0x38` | time>>8 | time&0xFF | P2 time* |
+| `DISP_TIME_P3` | `0x39` | time>>8 | time&0xFF | P3 time* |
+| `DISP_TIME_P4` | `0x3A` | time>>8 | time&0xFF | P4 time* |
+| `DISP_ROUND_WINNER` | `0x3B` | — | player | Winner (0=none) |
+| `DISP_SCORES` | `0x3C` | player | score | Update score |
+| `DISP_FINAL_WINNER` | `0x3D` | — | player | Game winner |
 
-### Pin Configuration (verify against your schematic!)
+> *\* Time = `0xFFFF` means timeout (show red ring, no time)*
 
-| Function | GPIO | Original soundProgram | Notes |
-|----------|------|----------------------|-------|
-| I2S DOUT | 25 or 23 | 25 | **VERIFY** which your PCB uses |
-| I2S BCLK | 26 | 26 | OK |
-| I2S LRC | 22 or 25 | 22 | **VERIFY** which your PCB uses |
-| SD SCK | 14 | ~~18~~ | Changed to HSPI |
-| SD MISO | 12 | ~~19~~ | Changed to HSPI |
-| SD MOSI | 13 | ~~23~~ | Changed to HSPI |
-| SD CS | 5 | 5 | OK |
+</details>
 
-### SD Card File Structure
+<details>
+<summary><b>👆 Commands: Display → Host</b></summary>
+
+| CMD | Hex | Description |
+|:----|:---:|:------------|
+| `TOUCH_SKIP_WAIT` | `0x40` | Skip wait screen |
+
+</details>
+
+---
+
+## ⏱️ Timeouts
+
+| Phase | Duration | On Timeout |
+|:------|:--------:|:-----------|
+| Join (per player) | 15s | Skip to next |
+| Reaction round | 10s | `0xFFFF` (red ring) |
+| Shake round | 30s | `0xFFFF` (red ring) |
+
+---
+
+## 🎮 Game Flow
+
+```mermaid
+stateDiagram-v2
+    [*] --> IDLE: Power On
+    IDLE --> ASSIGN_IDS: Touch Start
+    ASSIGN_IDS --> COUNTDOWN: 2+ Players
+    COUNTDOWN --> REACTION: Mode 1
+    COUNTDOWN --> SHAKE: Mode 2
+    REACTION --> RESULTS: All Done
+    SHAKE --> RESULTS: All Done
+    RESULTS --> COUNTDOWN: Round < 5
+    RESULTS --> FINAL: Round = 5
+    FINAL --> IDLE: Done
 ```
-/1.mp3   - "One"
-/2.mp3   - "Two"
-/3.mp3   - "Three"
-/4.mp3   - "Four"
-/5.mp3   - "Ten"
-/6.mp3   - "Fifteen"
-/7.mp3   - "Twenty"
-/8.mp3   - "Get Ready"
-/9.mp3   - "3-2-1-Go"
-/10.mp3  - "Player"
-...
-/28.mp3  - "Button Click"
-```
 
-### Usage in Code
+| State | Description |
+|:------|:------------|
+| 🌈 **IDLE** | Rainbow animation, wait for touch |
+| 👋 **ASSIGN_IDS** | "Press Player 1-4" (15s each) |
+| ⏰ **COUNTDOWN** | 3-2-1 with blinks + vibration |
+| ⚡ **REACTION** | Press on GO! |
+| 🔄 **SHAKE** | Shake to target count |
+| 📊 **RESULTS** | Show times + scores |
+| 🏆 **FINAL** | Announce winner |
+
+---
+
+## 🔊 Audio System
+
+Uses **SPIFFS** (internal flash) — no SD card needed!
+
+<details>
+<summary><b>Sound Files</b></summary>
+
+| File | Content |
+|:-----|:--------|
+| `/1.mp3` - `/4.mp3` | "One" - "Four" |
+| `/5.mp3` - `/7.mp3` | "Ten", "Fifteen", "Twenty" |
+| `/8.mp3` | "Get Ready" |
+| `/9.mp3` | Countdown beeps |
+| `/10.mp3` | "Player" |
+| `/11.mp3` | "Ready" |
+| `/12.mp3` - `/28.mp3` | Various announcements & SFX |
+
+</details>
+
 ```cpp
 #include "AudioManager.h"
 
 AudioManager audio;
 
 void setup() {
-  // Initialize with 50% volume (0.0 to 4.0)
-  if (!audio.begin(0.5)) {
-    Serial.println("Audio init failed!");
-  }
+  audio.begin(0.5);  // 50% volume
 }
 
 void loop() {
-  audio.update();  // CRITICAL: Must call every loop iteration!
+  audio.update();  // Must call every loop!
   
-  // Queue single sounds
   audio.queueSound(SND_GET_READY);
-  audio.queueSound(SND_BEEP);
-  
-  // Convenience methods
-  audio.playPlayerNumber(1);    // "Player" + "1"
-  audio.playPlayerWins(2);      // "Player" + "2" + "Wins"
-  audio.playCountdown(3);       // "3" (or tick sound)
-  
-  // Control
-  audio.setVolume(0.8);         // Change volume
-  audio.stop();                 // Stop and clear queue
-  audio.isPlaying();            // Check if playing
-  audio.getQueueCount();        // Items in queue
+  audio.playPlayerWins(2);  // "Player 2 Wins"
 }
 ```
 
-### Non-Blocking Design
-- `audio.update()` must be called every loop iteration
-- Sounds queue up and play sequentially
-- Queue holds up to 16 sounds
-- Thread-safe for dual-core operation
+---
 
-## Game Flow
+## 🛠️ Building
 
-1. **IDLE** → Rainbow animation, wait for display touch
-2. **ASSIGN_IDS** → Prompt "Press Player 1-4", button assigns ID
-3. **COUNTDOWN** → 3-2-1 with red blinks + vibration
-4. **REACTION/SHAKE** → Game runs until completion/timeout
-5. **COLLECT_RESULTS** → Token-based result collection
-6. **SHOW_RESULTS** → Display times, update scores
-7. **Repeat** for 5 rounds
-8. **FINAL_WINNER** → Announce winner, return to IDLE
+### Prerequisites
 
-## Building
+| Component | Tool |
+|:----------|:-----|
+| ATtiny85 | Arduino IDE + ATTinyCore |
+| ESP32 Host | Arduino IDE + ESP32 board |
+| ESP32-S3 Display | Arduino IDE + ESP32-S3 board |
 
-### ATtiny85
-- **Board**: ATTinyCore (ATtiny85, 8MHz internal)
-- **Programmer**: USBasp or Arduino as ISP
-- **Libraries**: None (custom software I2C/UART to save flash)
+### Libraries
 
-### ESP32 Host
-- **Board**: ESP32 Dev Module (or DOIT ESP32 DEVKIT V1)
-- **Libraries**:
-  - Adafruit NeoPixel
-  - **ESP8266Audio** ← Yes, this name is correct! Despite the name, it fully supports ESP32. Install via Library Manager.
+```
+Arduino IDE → Sketch → Include Library → Manage Libraries
+```
 
-### Library Installation
-1. Arduino IDE → Sketch → Include Library → Manage Libraries
-2. Search "ESP8266Audio" → Install (by Earle F. Philhower)
-3. Search "Adafruit NeoPixel" → Install
+| Library | Used By |
+|:--------|:--------|
+| `ESP8266Audio` | ESP32 Host (audio) |
+| `Adafruit NeoPixel` | ESP32 Host (LEDs) |
+| `ATTinyCore` | Joystick firmware |
 
-> **Note:** ESP8266Audio was originally written for ESP8266 but fully supports ESP32 (and works better on ESP32 due to more RAM). The author never renamed it.
+> 💡 **Note:** ESP8266Audio works perfectly on ESP32 despite its name!
 
-## Testing Checklist
+### Upload SPIFFS
 
-- [ ] SD card mounts (check serial output)
-- [ ] MP3 files play (use soundProgram_Fixed.ino first)
+```bash
+# Install ESP32 filesystem uploader plugin, then:
+Arduino IDE → Tools → ESP32 Sketch Data Upload
+```
+
+---
+
+## 📁 Project Files
+
+```
+ReactionTimeDuel/
+├── 📄 Protocol.h            # Shared protocol definitions
+├── 📄 DisplayProtocol.h     # Display-side protocol helper
+├── 📄 AudioManager.h        # Non-blocking audio system
+├── 📄 ATtiny85_Joystick.ino # Joystick firmware
+├── 📄 ESP32_Host.ino        # Main game controller
+├── 📄 soundProgram_Fixed.ino# Audio test sketch
+└── 📁 data/                 # SPIFFS audio files
+    ├── 1.mp3
+    ├── 2.mp3
+    └── ...
+```
+
+---
+
+## ✅ Testing Checklist
+
 - [ ] UART loopback (TX→RX)
 - [ ] ID assignment sequence
 - [ ] Hardware GO signal timing
 - [ ] NeoPixel animations
 - [ ] Button debounce
-- [ ] Motor PWM
+- [ ] Motor vibration
 - [ ] MPU-6050 shake detection
-- [ ] Token-based transmission
+- [ ] Audio playback
 - [ ] 5-round game completion
-- [ ] Audio plays during game states
+- [ ] Display communication
 
-## Files
+---
 
-| File | Description |
-|------|-------------|
-| Protocol.h | Shared definitions (IDs, commands, pins, CRC8, sound catalog) |
-| AudioManager.h | Non-blocking audio queue system with ID-based playback |
-| ATtiny85_Joystick.ino | Joystick controller firmware |
-| ESP32_Host.ino | Main game controller firmware (with audio integration) |
-| soundProgram_Fixed.ino | Simple audio test sketch (for debugging) |
+## 👥 Team
 
-## Dependencies
+| Name | Student ID |
+|:-----|:-----------|
+| Andrei | 502813 |
+| Yu-I | 464050 |
+| Ahzam | 509403 |
+| Wout | 497725 |
 
-| Library | Source | Used By |
-|---------|--------|---------|
-| ESP8266Audio | Library Manager | ESP32_Host (AudioManager) |
-| Adafruit NeoPixel | Library Manager | ESP32_Host |
-| ATTinyCore | Board Manager | ATtiny85_Joystick |
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  <b>Made for most, fun for all.</b><br>
+  <i>Unlock the game.</i>
+</p>
