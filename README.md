@@ -183,8 +183,7 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> IDLE: Power On
-    IDLE --> ASSIGN_IDS: Touch Start
+    [*] --> ASSIGN_IDS: Power On
     ASSIGN_IDS --> COUNTDOWN: 2+ Players
     COUNTDOWN --> REACTION: Mode 1
     COUNTDOWN --> SHAKE: Mode 2
@@ -193,17 +192,18 @@ stateDiagram-v2
     RESULTS --> COUNTDOWN: Round < 5
     RESULTS --> FINAL: Round = 5
     FINAL --> IDLE: Done
+    IDLE --> ASSIGN_IDS: Touch Start
 ```
 
 | State | Description |
 |:------|:------------|
-| 🌈 **IDLE** | Rainbow animation, wait for touch |
-| 👋 **ASSIGN_IDS** | "Press Player 1-4" (15s each) |
+| 👋 **ASSIGN_IDS** | Boot → "Press Player 1-4" (15s each) |
 | ⏰ **COUNTDOWN** | 3-2-1 with blinks + vibration |
 | ⚡ **REACTION** | Press on GO! |
 | 🔄 **SHAKE** | Shake to target count |
 | 📊 **RESULTS** | Show times + scores |
 | 🏆 **FINAL** | Announce winner |
+| 🌈 **IDLE** | After game ends, wait for restart |
 
 ---
 

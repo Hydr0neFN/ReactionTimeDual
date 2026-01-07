@@ -703,14 +703,17 @@ void setup() {
   // Random seed
   randomSeed(analogRead(36));
   
-  // Initial state
-  gameState = GAME_IDLE;
+  // Initial state - start joining immediately on boot
+  gameState = GAME_ASSIGN_IDS;
   stateStartTime = 0;
+  currentAssignSlot = 0;
+  resetPlayers();
   
   Serial.println(F("Host Ready!"));
   Serial.printf("UART: TX=%d, RX=%d\n", PIN_UART_TX, PIN_UART_RX);
   Serial.printf("Signals: GO=%d, RST=%d\n", PIN_GO, PIN_RST);
   Serial.printf("NeoPixel: %d (%d LEDs)\n", PIN_NEOPIXEL, NEOPIXEL_COUNT);
+}
 }
 
 // =============================================================================
