@@ -92,10 +92,13 @@
 #define DISP_GO             0x34
 #define DISP_REACTION_MODE  0x35
 #define DISP_SHAKE_MODE     0x36  // DATA_LOW = target (10/20/30)
-#define DISP_SHOW_TIME      0x37  // DATA_HIGH=player_id, DATA_LOW sent separately
-#define DISP_ROUND_WINNER   0x39  // Round winner (DATA_LOW = player_id)
-#define DISP_SCORES         0x3A  // Score update (DATA_HIGH=id, DATA_LOW=score)
-#define DISP_FINAL_WINNER   0x3B  // Final winner (DATA_LOW = player_id)
+#define DISP_TIME_P1        0x37  // Player 1 time (DATA_HIGH=time>>8, DATA_LOW=time&0xFF, 0xFFFF=timeout)
+#define DISP_TIME_P2        0x38  // Player 2 time
+#define DISP_TIME_P3        0x39  // Player 3 time
+#define DISP_TIME_P4        0x3A  // Player 4 time
+#define DISP_ROUND_WINNER   0x3B  // Round winner (DATA_LOW = player_id, 0 = no winner)
+#define DISP_SCORES         0x3C  // Score update (DATA_HIGH=player_id, DATA_LOW=score)
+#define DISP_FINAL_WINNER   0x3D  // Final winner (DATA_LOW = player_id)
 
 // From Display
 #define TOUCH_SKIP_WAIT     0x40  // User skipped wait

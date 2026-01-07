@@ -420,8 +420,8 @@ void handleAssignIDsState() {
       }
     }
     
-    // Timeout for this slot (5s)
-    if (millis() - promptTime > 5000) {
+    // Timeout for this slot (15s)
+    if (millis() - promptTime > 15000) {
       Serial.printf("Player %d timeout, skipping\n", currentAssignSlot + 1);
       currentAssignSlot++;
       waiting = false;
@@ -611,12 +611,14 @@ void handleShowResultsState() {
     uint8_t winner = findWinner();
     Serial.printf("Round winner: Player %d\n", winner + 1);
     
-    // Send times to display
+    // Send times to display (one command per player)
+    // 0xFFFF = timeout (display shows red ring, no time)
+    const uint8_t timeCommands[] = {DISP_TIME_P1, DISP_TIME_P2, DISP_TIME_P3, DISP_TIME_P4};
     for (uint8_t i = 0; i < MAX_PLAYERS; i++) {
       if (players[i].joined) {
-        sendPacket(ID_DISPLAY, DISP_SHOW_TIME, i + 1, players[i].reactionTime >> 8);
+        uint16_t time = players[i].reactionTime;  // 0xFFFF if timeout
+        sendPacket(ID_DISPLAY, timeCommands[i], (time >> 8) & 0xFF, time & 0xFF);
         delay(10);
-        sendPacket(ID_DISPLAY, DISP_SHOW_TIME, 0x80 | (i + 1), players[i].reactionTime & 0xFF);
       }
     }
     
@@ -627,6 +629,9 @@ void handleShowResultsState() {
       // Audio: "Player X" + "Fastest"
       audio.playPlayerNumber(winner + 1);
       audio.queueSound(SND_FASTEST);
+    } else {
+      // No winner (all timeout)
+      sendPacket(ID_DISPLAY, DISP_ROUND_WINNER, 0, 0);
     }
     
     // Send scores
