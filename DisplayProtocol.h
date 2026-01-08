@@ -28,14 +28,14 @@
 // COMMANDS FROM HOST (you receive these)
 // =============================================================================
 #define DISP_IDLE           0x30  // Show idle/start screen
-#define DISP_PROMPT_JOIN    0x31  // DATA_LOW = player (1-4) to prompt
+#define DISP_PROMPT_JOIN    0x31  // DATA_LOW: 0 = generic "press to join", 1-4 = prompt specific player
 #define DISP_PLAYER_JOINED  0x32  // DATA_LOW = player (1-4) joined
 #define DISP_COUNTDOWN      0x33  // DATA_LOW = seconds (3, 2, 1)
 #define DISP_GO             0x34  // Show "GO!"
 #define DISP_REACTION_MODE  0x35  // Reaction mode selected
 #define DISP_SHAKE_MODE     0x36  // DATA_LOW = shake target (10, 15, 20)
-#define DISP_TIME_P1        0x37  // Player 1 time: DATA_HIGH<<8 | DATA_LOW = ms (0xFFFF = timeout)
-#define DISP_TIME_P2        0x38  // Player 2 time
+#define DISP_TIME_P1        0x37  // Player 1 time: DATA_HIGH<<8 | DATA_LOW = ms (0xFFFF = timeout/penalty)
+#define DISP_TIME_P2        0x38  // Player 2 time (0xFFFF = show red ring, no time)
 #define DISP_TIME_P3        0x39  // Player 3 time
 #define DISP_TIME_P4        0x3A  // Player 4 time
 #define DISP_ROUND_WINNER   0x3B  // DATA_LOW = winner (1-4), 0 = no winner
@@ -164,8 +164,13 @@ void loop() {
         break;
         
       case DISP_PROMPT_JOIN:
-        // Highlight player circle, prompt to press
-        // dataLow = player number (1-4)
+        // dataLow = 0: Generic "Press button to join" for all
+        // dataLow = 1-4: Prompt specific player
+        if (dataLow == 0) {
+          // Show generic join prompt
+        } else {
+          // Highlight player circle for dataLow
+        }
         break;
         
       case DISP_PLAYER_JOINED:
@@ -198,9 +203,10 @@ void loop() {
         uint8_t player = cmd - DISP_TIME_P1 + 1;  // 1-4
         uint16_t timeMs = getTimeFromPacket(rxPacket);
         if (timeMs == 0xFFFF) {
-          // Timeout - show red ring, no time
+          // Timeout OR Penalty (cheater) - show red ring, no time
+          // Could display "FOUL" or "---" instead of time
         } else {
-          // Show time: e.g. "1.203 ms"
+          // Show time: e.g. "245 ms"
         }
         break;
       }
