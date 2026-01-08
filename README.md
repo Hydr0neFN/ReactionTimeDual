@@ -174,7 +174,8 @@
 
 | Phase | Duration | On Timeout |
 |:------|:--------:|:-----------|
-| Join phase | 60s total | Start game with joined players (min 2) |
+| Join window | 15s (resets on each join) | Start if 2+, else → IDLE |
+| IDLE wait | 60s or touch | → ASSIGN_IDS |
 | Reaction round | 10s after LEDs stop | `0xFFFF` (red ring) |
 | Shake round | 30s | `0xFFFF` (red ring) |
 
@@ -184,9 +185,10 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> IDLE: Power On
-    IDLE --> ASSIGN_IDS: Touch/Timeout
+    [*] --> ASSIGN_IDS: Power On
+    ASSIGN_IDS --> IDLE: <2 Players (15s)
     ASSIGN_IDS --> COUNTDOWN: 2+ Players
+    IDLE --> ASSIGN_IDS: Touch/60s
     COUNTDOWN --> REACTION: Mode 1
     COUNTDOWN --> SHAKE: Mode 2
     REACTION --> RESULTS: All Done
@@ -198,13 +200,13 @@ stateDiagram-v2
 
 | State | Description |
 |:------|:------------|
-| 🌈 **IDLE** | Power on / after game ends. Touch to start |
-| 👋 **ASSIGN_IDS** | "Press to join" — 60s window. Touch to skip if 2+ joined |
+| 👋 **ASSIGN_IDS** | Power on starts here. "Press to join" — 15s window. Touch to skip if 2+ |
+| 🌈 **IDLE** | Reached if <2 players, or after game ends. Touch/60s → ASSIGN_IDS |
 | ⏰ **COUNTDOWN** | 3-2-1 with blinks + vibration |
 | ⚡ **REACTION** | Display "GO!", LEDs flash random colors. When LEDs stop → press! |
 | 🔄 **SHAKE** | Shake to target count (10/15/20) |
 | 📊 **RESULTS** | Show times + scores. 0xFFFF = timeout/penalty (red ring) |
-| 🏆 **FINAL** | Announce winner |
+| 🏆 **FINAL** | Announce winner after 5 rounds |
 
 ---
 
