@@ -593,26 +593,28 @@ void handleReactionState() {
     stateStartTime = millis();
     signalSent = false;
     goTime = 0;
+    
+    // Show "GO!" on display at START (meaning: get ready, watch the LEDs!)
+    sendPacket(ID_DISPLAY, DISP_GO, 0, 0);
     neoMode = NEO_RANDOM_FAST;
-    Serial.println(F("Reaction mode: waiting for random delay..."));
+    Serial.println(F("Reaction mode: GO displayed, random LEDs running..."));
   }
   
-  // Wait for random delay, then send GO signal + visual cue
+  // Wait for random delay, then send timing signal + stop LEDs on fixed color
   if (!signalSent && (millis() - stateStartTime) >= REACT_DELAYS[delayIndex]) {
     goTime = millis();
     signalSent = true;
     
     // NOW send timing signal to joysticks (this is when their timer starts!)
     sendPacket(ID_BROADCAST, CMD_VIBRATE, 0, 0xFF);
-    sendPacket(ID_DISPLAY, DISP_GO, 0, 0);
     pulseGO();  // Hardware timing sync!
     audio.queueSound(SND_BEEP);
     
-    // Visual cue: green LEDs
+    // Visual cue: LEDs stop on fixed color (the signal to press!)
     neoMode = NEO_FIXED_COLOR;
-    neoColor = pixels.Color(0, 255, 0);
+    neoColor = pixels.Color(0, 255, 0);  // Green = PRESS NOW!
     
-    Serial.println(F("GO! (Reaction mode)"));
+    Serial.println(F("LEDs stopped! (Press now!)"));
   }
   
   // Timeout after signal

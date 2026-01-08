@@ -184,7 +184,8 @@ void loop() {
         break;
         
       case DISP_GO:
-        // Show "GO!" on screen
+        // Show "GO!" - LEDs will flash random colors
+        // When LEDs stop on fixed color = signal to press
         break;
         
       case DISP_REACTION_MODE:

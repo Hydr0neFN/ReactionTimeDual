@@ -175,7 +175,7 @@
 | Phase | Duration | On Timeout |
 |:------|:--------:|:-----------|
 | Join phase | 60s total | Start game with joined players (min 2) |
-| Reaction round | 10s after GO | `0xFFFF` (red ring) |
+| Reaction round | 10s after LEDs stop | `0xFFFF` (red ring) |
 | Shake round | 30s | `0xFFFF` (red ring) |
 
 ---
@@ -201,7 +201,7 @@ stateDiagram-v2
 | 🌈 **IDLE** | Power on / after game ends. Touch to start |
 | 👋 **ASSIGN_IDS** | "Press to join" — 60s window. Touch to skip if 2+ joined |
 | ⏰ **COUNTDOWN** | 3-2-1 with blinks + vibration |
-| ⚡ **REACTION** | Random delay (10/15/20s), then GO + green LEDs. Press immediately! |
+| ⚡ **REACTION** | Display "GO!", LEDs flash random colors. When LEDs stop → press! |
 | 🔄 **SHAKE** | Shake to target count (10/15/20) |
 | 📊 **RESULTS** | Show times + scores. 0xFFFF = timeout/penalty (red ring) |
 | 🏆 **FINAL** | Announce winner |
