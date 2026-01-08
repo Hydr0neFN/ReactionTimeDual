@@ -72,7 +72,7 @@
 #define CMD_ASSIGN_ID       0x20  // Broadcast: assign ID to button presser
 #define CMD_GAME_START      0x21  // Game starts (DATA_HIGH=mode, DATA_LOW=param)
 #define CMD_TRANSMIT_TOKEN  0x22  // "Player X may transmit" (DATA_LOW=player_id)
-#define CMD_VIBRATE         0x23  // Vibrate motor (DATA_LOW=duration_ms/10)
+#define CMD_VIBRATE         0x23  // 0xFF=GO signal (start timer), else duration×10ms
 #define CMD_IDLE            0x24  // Return to idle state
 #define CMD_COUNTDOWN       0x25  // Countdown pulse
 
