@@ -1,3 +1,5 @@
+**English** · [繁體中文](README.zh-TW.md)
+
 # Reaction Time Duel
 ## This project was selected for the Hanze Open Day showcase! Yipee!
 <img width="2048" height="1536" alt="IMG_2032" src="https://github.com/user-attachments/assets/0c61f458-73cb-4014-977f-d88b95b5550a" />
